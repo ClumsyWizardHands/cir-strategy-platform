@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIR Strategy Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--slate-50:#f8fafc;--slate-100:#f1f5f9;--slate-200:#e2e8f0;--slate-300:#cbd5e1;
+--slate-400:#94a3b8;--slate-500:#64748b;--slate-600:#475569;--slate-700:#334155;
+--slate-800:#1e293b;--slate-900:#0f172a;
+--amber-50:#fffbeb;--amber-100:#fef3c7;--amber-600:#d97706;--amber-700:#b45309;
+--teal-50:#f0fdfa;--teal-100:#ccfbf1;--teal-600:#0d9488;--teal-700:#0f766e;
+--blue-50:#eff6ff;--blue-100:#dbeafe;--blue-600:#2563eb;--blue-700:#1d4ed8;
+--green-50:#ecfdf5;--green-100:#d1fae5;--green-600:#059669;--green-700:#047857;
+--purple-50:#faf5ff;--purple-100:#ede9fe;--purple-600:#9333ea;--purple-700:#7e22ce;
+--red-50:#fef2f2;--red-100:#fee2e2;--red-600:#dc2626;--red-700:#b91c1c;
+--indigo-50:#eef2ff;--indigo-100:#e0e7ff;--indigo-600:#4f46e5;--indigo-700:#4338ca;
+--orange-50:#fff7ed;--orange-100:#ffedd5;--orange-600:#ea580c;--orange-700:#c2410c;
+--font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+--sidebar-w:260px;
+}
+body{font-family:var(--font);background:var(--slate-100);color:var(--slate-800);line-height:1.6}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--slate-900);color:white;display:flex;flex-direction:column;z-index:50;overflow-y:auto}
+.sidebar-brand{padding:20px 20px 16px;border-bottom:1px solid var(--slate-700)}
+.sidebar-brand h1{font-size:0.95rem;font-weight:800;letter-spacing:-0.02em}
+.sidebar-brand span{font-size:0.68rem;color:var(--slate-400);display:block;margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section{padding:0 12px;margin-bottom:16px}
+.nav-section-label{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--slate-500);padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:0.8rem;color:var(--slate-400);cursor:pointer;transition:all 0.15s;font-weight:500}
+.nav-item:hover{background:var(--slate-800);color:var(--slate-200)}
+.nav-item.active{background:var(--slate-700);color:white}
+.nav-icon{width:18px;text-align:center;font-size:0.85rem}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--slate-700);font-size:0.68rem;color:var(--slate-500)}
+.agent-tag{font-size:0.6rem;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:auto}
+.agent-tag.landscape{background:rgba(99,102,241,0.15);color:#818cf8}
+.agent-tag.dashboard{background:rgba(14,165,233,0.15);color:#38bdf8}
+.agent-tag.pipeline{background:rgba(249,115,22,0.15);color:#fb923c}
+.agent-tag.partnership{background:rgba(168,85,247,0.15);color:#c084fc}
+.agent-tag.revenue{background:rgba(34,197,94,0.15);color:#4ade80}
+.agent-tag.impact{background:rgba(244,63,94,0.15);color:#fb7185}
+.agent-tag.synthesizer{background:rgba(251,191,36,0.15);color:#fbbf24}
+.main{margin-left:var(--sidebar-w);min-height:100vh}
+.topbar{background:white;border-bottom:1px solid var(--slate-200);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.topbar h2{font-size:1rem;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar .badge{font-size:0.72rem;padding:4px 12px;border-radius:12px;font-weight:600}
+.topbar .badge-cir{background:var(--indigo-50);color:var(--indigo-700)}
+.content{padding:32px}
+.page{display:none}
+.page.active{display:block}
+.dash-hero{background:linear-gradient(135deg,#1e1b4b,#312e81,#3730a3);color:white;border-radius:16px;padding:40px;margin-bottom:32px;position:relative;overflow:hidden}
+.dash-hero::after{content:'';position:absolute;top:-50%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(99,102,241,0.15) 0%,transparent 70%);border-radius:50%}
+.dash-hero h2{font-size:1.5rem;font-weight:800;margin-bottom:8px;letter-spacing:-0.02em;position:relative;z-index:1}
+.dash-hero p{font-size:0.95rem;color:rgba(255,255,255,0.75);max-width:650px;line-height:1.6;position:relative;z-index:1}
+.agent-flow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:32px}
+@media(max-width:1200px){.agent-flow{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:768px){.agent-flow{grid-template-columns:repeat(2,1fr)}}
+.agent-card{background:white;border:1px solid var(--slate-200);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s}
+.agent-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.agent-card .agent-num{font-size:0.55rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px}
+.agent-card.a1 .agent-num{color:#6366f1}
+.agent-card.a2 .agent-num{color:#0ea5e9}
+.agent-card.a3 .agent-num{color:#f97316}
+.agent-card.a4 .agent-num{color:#a855f7}
+.agent-card.a5 .agent-num{color:#22c55e}
+.agent-card.a6 .agent-num{color:#f43f5e}
+.agent-card.a7 .agent-num{color:#eab308}
+.agent-card h4{font-size:0.78rem;font-weight:700;margin-bottom:4px;line-height:1.3}
+.agent-card p{font-size:0.68rem;color:var(--slate-500);line-height:1.4}
+.dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+@media(max-width:768px){.dash-stats{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:white;border:1px solid var(--slate-200);border-radius:12px;padding:20px;text-align:center}
+.stat-card .num{font-size:1.5rem;font-weight:800;color:var(--slate-900)}
+.stat-card .label{font-size:0.7rem;color:var(--slate-500);font-weight:500;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px}
+.dash-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
+@media(max-width:1000px){.dash-cards{grid-template-columns:1fr}}
+.dash-card{background:white;border:1px solid var(--slate-200);border-radius:14px;padding:28px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.dash-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.dash-card.data::before{background:var(--blue-600)}
+.dash-card.partners::before{background:var(--purple-600)}
+.dash-card.invest::before{background:var(--green-600)}
+.dash-card h3{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.dash-card p{font-size:0.85rem;color:var(--slate-500);line-height:1.5}
+.dash-card .card-features{margin-top:16px;padding-top:16px;border-top:1px solid var(--slate-100);list-style:none}
+.dash-card .card-features li{font-size:0.78rem;color:var(--slate-600);padding:3px 0}
+.section-hero{border-radius:16px;padding:36px;margin-bottom:28px;color:white;position:relative;overflow:hidden}
+.section-hero h2{font-size:1.4rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.02em}
+.section-hero p{font-size:0.9rem;opacity:0.8;max-width:600px;line-height:1.6}
+.section-hero .hero-agent{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;margin-bottom:12px}
+.hero-landscape{background:linear-gradient(135deg,#312e81,#4338ca)}
+.hero-dashboard{background:linear-gradient(135deg,#0c4a6e,#0369a1)}
+.hero-pipeline{background:linear-gradient(135deg,#7c2d12,#c2410c)}
+.hero-partnership{background:linear-gradient(135deg,#581c87,#7e22ce)}
+.hero-revenue{background:linear-gradient(135deg,#14532d,#15803d)}
+.hero-impact{background:linear-gradient(135deg,#881337,#be123c)}
+.hero-synthesizer{background:linear-gradient(135deg,#713f12,#a16207)}
+.info-card{background:white;border:1px solid var(--slate-200);border-radius:12px;padding:24px;margin-bottom:16px}
+.info-card h3{font-size:0.95rem;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--slate-100)}
+.info-card h4{font-size:0.85rem;font-weight:700;margin-bottom:8px;margin-top:16px}
+.info-card h4:first-of-type{margin-top:0}
+.info-card p{font-size:0.85rem;color:var(--slate-600);line-height:1.6;margin-bottom:8px}
+.info-card ul{list-style:none;padding:0;margin-bottom:12px}
+.info-card li{font-size:0.82rem;color:var(--slate-600);padding:4px 0;padding-left:14px;position:relative}
+.info-card li::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--slate-400);position:absolute;left:0;top:10px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.info-grid{grid-template-columns:1fr}}
+.info-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.info-grid-3{grid-template-columns:1fr}}
+.callout{border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:0.85rem;line-height:1.6}
+.callout strong{font-weight:700}
+.callout-blue{background:var(--blue-50);border:1px solid var(--blue-100);color:var(--slate-700)}
+.callout-blue strong{color:var(--blue-700)}
+.callout-amber{background:var(--amber-50);border:1px solid var(--amber-100);color:var(--slate-700)}
+.callout-amber strong{color:var(--amber-700)}
+.callout-red{background:var(--red-50);border:1px solid var(--red-100);color:var(--slate-700)}
+.callout-red strong{color:var(--red-700)}
+.callout-green{background:var(--green-50);border:1px solid var(--green-100);color:var(--slate-700)}
+.callout-green strong{color:var(--green-700)}
+.callout-purple{background:var(--purple-50);border:1px solid var(--purple-100);color:var(--slate-700)}
+.callout-purple strong{color:var(--purple-700)}
+.metric-badge{display:inline-block;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:3px 8px;border-radius:4px;margin-left:6px}
+.metric-badge.strength{background:var(--green-50);color:var(--green-700)}
+.metric-badge.risk{background:var(--red-50);color:var(--red-700)}
+.metric-badge.opportunity{background:var(--blue-50);color:var(--blue-700)}
+.metric-badge.neutral{background:var(--slate-100);color:var(--slate-600)}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--slate-200);margin-bottom:24px;flex-wrap:wrap}
+.tab{padding:10px 20px;font-size:0.8rem;font-weight:600;color:var(--slate-500);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s}
+.tab:hover{color:var(--slate-700)}
+.tab.active{color:var(--slate-900);border-bottom-color:var(--indigo-600)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.pipeline-card{background:white;border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;margin-bottom:16px;transition:all 0.2s}
+.pipeline-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+.pipeline-header{padding:20px 24px;display:flex;align-items:center;gap:14px;cursor:pointer}
+.pipeline-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.pipeline-icon.philanthropic{background:var(--purple-100);color:var(--purple-700)}
+.pipeline-icon.residential{background:var(--teal-100);color:var(--teal-700)}
+.pipeline-icon.commercial{background:var(--amber-100);color:var(--amber-700)}
+.pipeline-icon.manufacturing{background:var(--indigo-100);color:var(--indigo-700)}
+.pipeline-title{font-size:0.95rem;font-weight:700}
+.pipeline-sub{font-size:0.78rem;color:var(--slate-500)}
+.pipeline-expand{margin-left:auto;font-size:0.85rem;color:var(--slate-400);transition:transform 0.2s}
+.pipeline-card.open .pipeline-expand{transform:rotate(180deg)}
+.pipeline-body{padding:0 24px 24px;display:none}
+.pipeline-card.open .pipeline-body{display:block}
+.scenario-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.82rem}
+.scenario-table th{background:var(--slate-50);padding:10px 14px;text-align:left;font-weight:700;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--slate-500);border-bottom:2px solid var(--slate-200)}
+.scenario-table td{padding:10px 14px;border-bottom:1px solid var(--slate-100);color:var(--slate-700)}
+.scenario-table tr:hover td{background:var(--slate-50)}
+.scenario-table .num-cell{font-weight:700;font-variant-numeric:tabular-nums}
+.scenario-table .positive{color:var(--green-700)}
+.scenario-table .highlight-row td{background:var(--indigo-50);font-weight:600}
+.tension-card{background:white;border:1px solid var(--slate-200);border-radius:12px;padding:24px;margin-bottom:16px;border-left:4px solid var(--amber-600)}
+.tension-card h4{font-size:0.9rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tension-card p{font-size:0.82rem;color:var(--slate-600);line-height:1.6;margin-bottom:6px}
+.tension-sides{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;margin-top:12px;align-items:start}
+@media(max-width:768px){.tension-sides{grid-template-columns:1fr;gap:8px}}
+.tension-side{background:var(--slate-50);border-radius:8px;padding:14px}
+.tension-side h5{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.tension-side.left h5{color:var(--blue-700)}
+.tension-side.right h5{color:var(--purple-700)}
+.tension-side p{font-size:0.8rem;color:var(--slate-600);line-height:1.5;margin:0}
+.tension-vs{font-size:0.7rem;font-weight:800;color:var(--slate-400);padding-top:16px}
+.rec-card{background:white;border:1px solid var(--slate-200);border-radius:12px;padding:24px;margin-bottom:16px;border-left:4px solid var(--indigo-600)}
+.rec-card h4{font-size:0.9rem;font-weight:700;margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.rec-card .rec-priority{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:3px 8px;border-radius:4px}
+.rec-card .rec-priority.p1{background:var(--red-50);color:var(--red-700)}
+.rec-card .rec-priority.p2{background:var(--amber-50);color:var(--amber-700)}
+.rec-card .rec-priority.p3{background:var(--blue-50);color:var(--blue-700)}
+.rec-card p{font-size:0.82rem;color:var(--slate-600);line-height:1.6;margin-bottom:6px}
+.rec-card .rec-agents{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.rec-card .rec-agent{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--slate-100);color:var(--slate-600)}
+.field-label{display:block;font-size:0.72rem;font-weight:600;color:var(--slate-500);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em}
+.field-textarea{width:100%;border:1px solid var(--slate-200);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:0.85rem;min-height:70px;resize:vertical;line-height:1.5;color:var(--slate-700)}
+.field-textarea:focus{outline:none;border-color:var(--indigo-600);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.field-input{width:100%;border:1px solid var(--slate-200);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:0.85rem;color:var(--slate-700)}
+.field-input:focus{outline:none;border-color:var(--indigo-600);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.field-group{margin-bottom:14px}
+.impact-meter{display:flex;gap:2px;margin:8px 0}
+.impact-bar{height:8px;border-radius:4px;flex:1}
+.impact-bar.filled.green{background:var(--green-600)}
+.impact-bar.filled.amber{background:var(--amber-600)}
+.impact-bar.filled.red{background:var(--red-600)}
+.impact-bar.empty{background:var(--slate-200)}
+.impact-label{font-size:0.7rem;color:var(--slate-500);display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="sidebar">
+<div class="sidebar-brand">
+<h1>CIR Strategy Platform</h1>
+<span>Center for Investment Readiness</span>
+</div>
+<div class="sidebar-nav">
+<div class="nav-section">
+<div class="nav-section-label">Overview</div>
+<div class="nav-item active" data-page="dashboard"><span class="nav-icon">&#9632;</span>Strategy Dashboard</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-label">Analysis Agents</div>
+<div class="nav-item" data-page="landscape"><span class="nav-icon">&#9670;</span>Landscape Analyst<span class="agent-tag landscape">A1</span></div>
+<div class="nav-item" data-page="dashboards"><span class="nav-icon">&#9670;</span>Dashboard Strategist<span class="agent-tag dashboard">A2</span></div>
+<div class="nav-item" data-page="pipeline"><span class="nav-icon">&#9670;</span>Investor Pipeline<span class="agent-tag pipeline">A3</span></div>
+<div class="nav-item" data-page="partnership"><span class="nav-icon">&#9670;</span>Partnership Designer<span class="agent-tag partnership">A4</span></div>
+</div>
+<div class="nav-section">
+<div class="nav-section-label">Modeling & Impact</div>
+<div class="nav-item" data-page="revenue"><span class="nav-icon">&#9670;</span>Revenue Modeler<span class="agent-tag revenue">A5</span></div>
+<div class="nav-item" data-page="impact"><span class="nav-icon">&#9670;</span>Community Impact<span class="agent-tag impact">A6</span></div>
+</div>
+<div class="nav-section">
+<div class="nav-section-label">Synthesis</div>
+<div class="nav-item" data-page="synthesizer"><span class="nav-icon">&#9670;</span>Strategy Synthesizer<span class="agent-tag synthesizer">A7</span></div>
+</div>
+</div>
+<div class="sidebar-footer">Strategy Planning Demo</div>
+</div>
+<div class="main">
+<div class="topbar">
+<h2 id="page-title">Strategy Dashboard</h2>
+<div class="topbar-right"><span class="badge badge-cir">CIR Strategy Update</span></div>
+</div>
+<div class="content">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+<div class="dash-hero">
+<h2>CIR Strategy Planning Platform</h2>
+<p>Seven specialized agents working in concert to design a comprehensive strategy update for the Center for Investment Readiness. Covering data products, investor partnerships, revenue models, and community impact.</p>
+</div>
+<div class="agent-flow">
+<div class="agent-card a1" data-page="landscape"><div class="agent-num">Agent 1</div><h4>Landscape Analyst</h4><p>Current state baseline</p></div>
+<div class="agent-card a2" data-page="dashboards"><div class="agent-num">Agent 2</div><h4>Dashboard Strategist</h4><p>Data product strategy</p></div>
+<div class="agent-card a3" data-page="pipeline"><div class="agent-num">Agent 3</div><h4>Investor Pipeline</h4><p>Four investor categories</p></div>
+<div class="agent-card a4" data-page="partnership"><div class="agent-num">Agent 4</div><h4>Partnership Designer</h4><p>Deal structures</p></div>
+<div class="agent-card a5" data-page="revenue"><div class="agent-num">Agent 5</div><h4>Revenue Modeler</h4><p>Scenario analysis</p></div>
+<div class="agent-card a6" data-page="impact"><div class="agent-num">Agent 6</div><h4>Community Impact</h4><p>Mission alignment</p></div>
+<div class="agent-card a7" data-page="synthesizer"><div class="agent-num">Agent 7</div><h4>Strategy Synthesizer</h4><p>Integrated recommendation</p></div>
+</div>
+<div class="dash-stats">
+<div class="stat-card"><div class="num">6</div><div class="label">CIR Communities</div></div>
+<div class="stat-card"><div class="num">4</div><div class="label">Investor Categories</div></div>
+<div class="stat-card"><div class="num">3</div><div class="label">Revenue Streams</div></div>
+<div class="stat-card"><div class="num">12+</div><div class="label">Dashboard Products</div></div>
+</div>
+<div class="dash-cards">
+<div class="dash-card data" data-page="dashboards"><h3>Data Dashboards</h3><p>Evaluate what to sell versus share. Restructure dashboard products to serve both revenue and mission.</p><ul class="card-features"><li>Dashboard product line audit</li><li>Pricing model evaluation</li><li>Free vs. premium tiering</li><li>Competitive positioning</li></ul></div>
+<div class="dash-card partners" data-page="pipeline"><h3>Investor Partnerships</h3><p>Four distinct investor categories requiring different value propositions and engagement strategies.</p><ul class="card-features"><li>Pipeline architecture per category</li><li>Value proposition design</li><li>Engagement sequence planning</li><li>Partnership term design</li></ul></div>
+<div class="dash-card invest" data-page="revenue"><h3>Revenue & Sustainability</h3><p>Model the financial scenarios. Where are the sustainability risks? What does the path to earned revenue look like?</p><ul class="card-features"><li>Multi-scenario modeling</li><li>Revenue mix analysis</li><li>Sustainability risk assessment</li><li>Growth path projection</li></ul></div>
+</div>
+<div class="callout callout-blue"><strong>Architecture:</strong> The Landscape Analyst (A1) feeds every other agent. The Strategy Synthesizer (A7) collects from all six. Agents 2-6 work in parallel on their domains. This is a hub-and-spoke model, not a sequential pipeline.</div>
+</div>
+
+<!-- LANDSCAPE ANALYST -->
+<div class="page" id="page-landscape">
+<div class="section-hero hero-landscape"><div class="hero-agent">Agent 1 / Landscape Analyst</div><h2>Current CIR Ecosystem</h2><p>Mapping what exists today. The honest baseline every other agent draws from.</p></div>
+<div class="callout callout-blue"><strong>Purpose:</strong> You cannot update a strategy without an honest baseline. This agent produces the "here is where we actually are" document.</div>
+<div class="tabs">
+<div class="tab active" data-tab="ls-overview">Ecosystem Overview</div>
+<div class="tab" data-tab="ls-products">Current Products</div>
+<div class="tab" data-tab="ls-gaps">Gap Analysis</div>
+</div>
+<div class="tab-panel active" id="ls-overview">
+<div class="info-grid">
+<div class="info-card"><h3>Program Footprint</h3>
+<div class="field-group"><label class="field-label">Active Communities</label><textarea class="field-textarea">Perry, OK; Lawrence County; Hutchinson, KS; SW Missouri; Iowa City; Enid, OK. Six communities in current cohort at different stages of investment readiness.</textarea></div>
+<div class="field-group"><label class="field-label">Program Duration</label><input class="field-input" value="Multi-year engagement with each cohort. Cohort 1 approaching maturity." /></div>
+<div class="field-group"><label class="field-label">Staff / Capacity</label><textarea class="field-textarea">Core team managing all six communities. Deep relationship-based engagement model. Capacity constrained for expansion without infrastructure investment.</textarea></div>
+</div>
+<div class="info-card"><h3>Current Revenue Mix</h3>
+<div class="field-group"><label class="field-label">Philanthropic Support</label><textarea class="field-textarea">Foundation grants and contracts. Primary revenue source. Includes program design, community engagement, and data infrastructure funding.</textarea></div>
+<div class="field-group"><label class="field-label">Dashboard Revenue</label><textarea class="field-textarea">Data dashboard products sold to communities, EDOs, and government agencies. Also shared with CIR communities as program benefit.</textarea></div>
+<div class="field-group"><label class="field-label">Fee-for-Service</label><textarea class="field-textarea">Consulting engagements, speaking, training. Currently ad hoc rather than productized.</textarea></div>
+</div>
+</div>
+<div class="info-card"><h3>Key Relationships</h3>
+<div class="info-grid">
+<div><h4>Funding Partners</h4><ul><li>Heartland Forward (primary programmatic funder)</li><li>Foundation partners providing community-level support</li><li>Government agencies (USDA Rural Development, state programs)</li></ul></div>
+<div><h4>Community Partners</h4><ul><li>Local economic development organizations in each CIR community</li><li>Chambers of commerce and downtown associations</li><li>Major employers (hospitals, school districts, manufacturers)</li><li>Local government (city/county officials, planning commissions)</li></ul></div>
+</div></div>
+</div>
+<div class="tab-panel" id="ls-products">
+<div class="info-card"><h3>Dashboard Product Inventory</h3><p>Current data dashboard offerings and their distribution model.</p>
+<div class="info-grid">
+<div><h4>Sold Products</h4><ul><li>Community Economic Profile Dashboard</li><li>Housing Market Analysis Dashboard</li><li>Retail Leakage & Commercial Gap Dashboard</li><li>Workforce Intelligence Dashboard</li><li>Investment Readiness Scorecard</li></ul></div>
+<div><h4>Shared (Free to CIR Communities)</h4><ul><li>All of the above provided to CIR cohort communities at no cost</li><li>Custom data pulls and analysis as part of program engagement</li><li>Community-specific data packages for investor presentations</li><li>Quarterly data updates and trend analysis</li></ul></div>
+</div></div>
+<div class="callout callout-amber"><strong>Strategic Tension:</strong> The same products CIR sells externally are given free to CIR communities. This creates a value perception question.</div>
+</div>
+<div class="tab-panel" id="ls-gaps">
+<div class="info-card"><h3>Identified Gaps</h3>
+<div class="info-grid">
+<div><h4>Product Gaps</h4><ul><li>No investor-facing translation layer</li><li>No real-time data refresh</li><li>No cross-community benchmarking product</li><li>Limited manufacturing sector intelligence</li><li>No self-service portal</li></ul></div>
+<div><h4>Strategic Gaps</h4><ul><li>No formal investor pipeline</li><li>No partnership structure templates</li><li>Revenue concentration risk</li><li>No scale model</li><li>No community alumni network</li></ul></div>
+</div></div>
+<div class="callout callout-red"><strong>Critical Finding:</strong> CIR has strong community relationships and solid data, but the infrastructure to convert those assets into sustainable revenue is underdeveloped.</div>
+</div>
+</div>
+
+<!-- DASHBOARD STRATEGIST -->
+<div class="page" id="page-dashboards">
+<div class="section-hero hero-dashboard"><div class="hero-agent">Agent 2 / Dashboard Strategist</div><h2>Data Product Strategy</h2><p>Evaluating what to sell, what to share, and how to structure dashboard products for revenue and mission.</p></div>
+<div class="tabs">
+<div class="tab active" data-tab="ds-audit">Product Audit</div>
+<div class="tab" data-tab="ds-tiering">Tiering Strategy</div>
+<div class="tab" data-tab="ds-pricing">Pricing Models</div>
+</div>
+<div class="tab-panel active" id="ds-audit">
+<div class="callout callout-blue"><strong>Core Question:</strong> How do you build a sustainable data product business when your most important users receive the product for free? The answer is designing products with different value at different tiers.</div>
+<div class="info-grid">
+<div class="info-card"><h3>Products Worth Monetizing</h3><h4>High-Value Paid Products</h4><ul>
+<li><strong>Investment Readiness Scorecard</strong> — Unique to CIR. No competitors. Strong pricing power. <span class="metric-badge strength">High Value</span></li>
+<li><strong>Cross-Community Benchmarking</strong> — New product. Network effect: more communities = more valuable. <span class="metric-badge opportunity">New</span></li>
+<li><strong>Investor Translation Engine</strong> — Converts community data into investor-ready packages. <span class="metric-badge opportunity">New</span></li>
+<li><strong>Custom Analytics & Deep Dives</strong> — Bespoke analysis. High-touch, high-margin. <span class="metric-badge strength">High Margin</span></li>
+</ul></div>
+<div class="info-card"><h3>Products Worth Sharing</h3><h4>Mission-Aligned Free Products</h4><ul>
+<li><strong>Community Economic Profile (Basic)</strong> — Standard data widely available. Low moat. Better as engagement tool. <span class="metric-badge neutral">Commodity</span></li>
+<li><strong>Program Impact Reports</strong> — Fund development tool. <span class="metric-badge neutral">Marketing</span></li>
+<li><strong>Community Data Literacy Toolkit</strong> — Mission-aligned. Builds demand for premium. <span class="metric-badge opportunity">Funnel</span></li>
+</ul></div>
+</div>
+</div>
+<div class="tab-panel" id="ds-tiering">
+<div class="info-card"><h3>Recommended Three-Tier Model</h3>
+<div class="info-grid-3">
+<div class="info-card" style="border-top:4px solid var(--slate-400)"><h3 style="text-align:center">Open</h3><p style="text-align:center;font-size:0.78rem;color:var(--slate-500);margin-bottom:16px">Free / Mission-aligned</p><ul><li>Basic community economic profiles</li><li>National trend data and benchmarks</li><li>Data literacy toolkit and guides</li><li>Program impact reports</li><li>Community self-assessment</li></ul><p style="margin-top:12px"><strong>Purpose:</strong> Build awareness. Demonstrate expertise. Create demand for premium.</p></div>
+<div class="info-card" style="border-top:4px solid var(--blue-600)"><h3 style="text-align:center">Professional</h3><p style="text-align:center;font-size:0.78rem;color:var(--slate-500);margin-bottom:16px">Subscription / Per-community</p><ul><li>Full economic analysis dashboards</li><li>Housing market intelligence</li><li>Retail gap / leakage analysis</li><li>Workforce intelligence</li><li>Investment Readiness Scorecard</li><li>Cross-community benchmarking</li><li>Quarterly data refreshes</li></ul><p style="margin-top:12px"><strong>Purpose:</strong> Core revenue driver for EDOs, RPCs, and state programs.</p></div>
+<div class="info-card" style="border-top:4px solid var(--indigo-600)"><h3 style="text-align:center">Strategic</h3><p style="text-align:center;font-size:0.78rem;color:var(--slate-500);margin-bottom:16px">Enterprise / Custom</p><ul><li>Everything in Professional</li><li>Investor Translation Engine</li><li>Custom analytics and deep dives</li><li>Multi-community portfolio view</li><li>Real-time data integration</li><li>White-label capability</li><li>Dedicated support</li></ul><p style="margin-top:12px"><strong>Purpose:</strong> High-value partnerships with state agencies, foundations, institutional investors.</p></div>
+</div></div>
+<div class="callout callout-green"><strong>CIR Community Access:</strong> CIR cohort communities receive Professional-tier access at no cost as a program benefit. This is a mission commitment, not a pricing exception.</div>
+</div>
+<div class="tab-panel" id="ds-pricing">
+<div class="info-card"><h3>Pricing Framework</h3>
+<table class="scenario-table"><thead><tr><th>Product Tier</th><th>Annual Price</th><th>Target Buyers</th><th>Volume Est.</th><th>Annual Revenue</th></tr></thead><tbody>
+<tr><td>Open</td><td class="num-cell">Free</td><td>All communities</td><td class="num-cell">200+</td><td class="num-cell">$0</td></tr>
+<tr><td>Professional</td><td class="num-cell">$8K-15K</td><td>EDOs, RPCs, state agencies</td><td class="num-cell">25-50</td><td class="num-cell">$200K-750K</td></tr>
+<tr class="highlight-row"><td>Strategic</td><td class="num-cell">$50K-150K</td><td>State programs, foundations</td><td class="num-cell">3-8</td><td class="num-cell">$150K-1.2M</td></tr>
+<tr><td>Custom Analytics</td><td class="num-cell">$15K-50K/project</td><td>Investors, developers, govt</td><td class="num-cell">10-20</td><td class="num-cell">$150K-1M</td></tr>
+</tbody></table></div>
+<div class="callout callout-amber"><strong>Pricing Sensitivity:</strong> These ranges are starting points. Validate through 5-10 discovery conversations before finalizing. The biggest risk is underpricing the Strategic tier.</div>
+</div>
+</div>
+
+<!-- INVESTOR PIPELINE -->
+<div class="page" id="page-pipeline">
+<div class="section-hero hero-pipeline"><div class="hero-agent">Agent 3 / Investor Pipeline Architect</div><h2>Investor Pipeline Design</h2><p>Four investor categories with distinct value propositions, timelines, and engagement strategies.</p></div>
+<div class="callout callout-blue"><strong>Key Insight:</strong> A philanthropic investor and a manufacturing investor need completely different engagement strategies. Treating them as one category is the most common failure mode.</div>
+
+<div class="pipeline-card open" id="pipe-philanthropic">
+<div class="pipeline-header" onclick="togglePipeline('pipe-philanthropic')"><div class="pipeline-icon philanthropic">&#9670;</div><div><div class="pipeline-title">Philanthropic Investors</div><div class="pipeline-sub">Foundations, CDFIs, impact-first capital</div></div><div class="pipeline-expand">&#9660;</div></div>
+<div class="pipeline-body"><div class="info-grid">
+<div class="info-card"><h3>Value Proposition</h3><p>CIR provides granular, community-level data and investment readiness assessment that foundations need but rarely have. Deploy capital based on documented readiness, not just applications.</p><h4>What They Get</h4><ul><li>Investment Readiness Scorecards for each CIR community</li><li>Community-specific impact projections grounded in local data</li><li>Pre-vetted community leadership relationships</li><li>Ongoing monitoring and impact reporting</li><li>De-risked investment thesis backed by data</li></ul></div>
+<div class="info-card"><h3>Engagement Strategy</h3><h4>Pipeline Stages</h4><ul><li><strong>Awareness:</strong> Publish investment readiness reports. Present at foundation convenings.</li><li><strong>Education:</strong> Host Investment Readiness Briefings with live dashboard demos.</li><li><strong>Evaluation:</strong> Provide custom assessments for funder target communities.</li><li><strong>Commitment:</strong> Structure partnership around specific communities or themes.</li><li><strong>Deepening:</strong> Expand from single-community to portfolio approach.</li></ul><h4>Timeline: 6-12 months</h4><p>Foundation decision cycles are long. Plan for 3-4 touchpoints before investment committee.</p></div>
+</div></div></div>
+
+<div class="pipeline-card" id="pipe-residential">
+<div class="pipeline-header" onclick="togglePipeline('pipe-residential')"><div class="pipeline-icon residential">&#9670;</div><div><div class="pipeline-title">Residential Investors</div><div class="pipeline-sub">Housing developers, builders, real estate investment</div></div><div class="pipeline-expand">&#9660;</div></div>
+<div class="pipeline-body"><div class="info-grid">
+<div class="info-card"><h3>Value Proposition</h3><p>CIR communities have documented housing demand with employer-backed absorption. Developers get pre-qualified markets with demand data, employer commitments, and incentive packages assembled.</p><h4>What They Get</h4><ul><li>Housing demand documentation with employer letters of commitment</li><li>Site-ready land with utility feasibility</li><li>Incentive packages pre-assembled (TIF, USDA RD, state programs)</li><li>Community alignment confirmed</li><li>Absorption projections based on employer hiring plans</li></ul></div>
+<div class="info-card"><h3>Engagement Strategy</h3><h4>Pipeline Stages</h4><ul><li><strong>Sourcing:</strong> Identify regional developers with rural/small-market track records.</li><li><strong>Qualification:</strong> Share housing opportunity package. Filter for product-market match.</li><li><strong>Site Visit:</strong> Host developer visits with employer meetings and council introductions.</li><li><strong>Deal Structuring:</strong> Assemble incentive packages. Connect with lenders.</li><li><strong>Construction:</strong> Track absorption and community impact. Build case studies.</li></ul><h4>Timeline: 3-9 months</h4><p>Developers move faster than foundations. Bottleneck is usually site readiness.</p></div>
+</div></div></div>
+
+<div class="pipeline-card" id="pipe-commercial">
+<div class="pipeline-header" onclick="togglePipeline('pipe-commercial')"><div class="pipeline-icon commercial">&#9670;</div><div><div class="pipeline-title">Commercial Investors</div><div class="pipeline-sub">Retailers, franchisees, commercial developers, site selectors</div></div><div class="pipeline-expand">&#9660;</div></div>
+<div class="pipeline-body"><div class="info-grid">
+<div class="info-card"><h3>Value Proposition</h3><p>CIR retail leakage and commercial gap analysis identifies specific categories where demand exceeds supply. Market-validated opportunities with data matching evaluation criteria.</p><h4>What They Get</h4><ul><li>Retail leakage data quantifying unmet demand by category</li><li>Trade area analysis with traffic, demographics, competition</li><li>Site specifications for corporate real estate evaluation</li><li>Incentive packages (TIF, Opportunity Zones, Main Street)</li><li>Community support verification</li></ul></div>
+<div class="info-card"><h3>Engagement Strategy</h3><h4>Pipeline Stages</h4><ul><li><strong>Data Distribution:</strong> Send retail gap reports to brokers and franchise teams.</li><li><strong>Targeted Outreach:</strong> Match specific retailers to specific communities.</li><li><strong>Site Presentation:</strong> Provide site-specific data packages.</li><li><strong>Deal Support:</strong> Coordinate incentive applications. Fast-track permitting.</li><li><strong>Post-Opening:</strong> Track performance. Build success stories.</li></ul><h4>Timeline: 6-18 months</h4><p>Corporate retail has long lead times. Franchise operators are faster (3-6 months).</p></div>
+</div></div></div>
+
+<div class="pipeline-card" id="pipe-manufacturing">
+<div class="pipeline-header" onclick="togglePipeline('pipe-manufacturing')"><div class="pipeline-icon manufacturing">&#9670;</div><div><div class="pipeline-title">Manufacturing Investors</div><div class="pipeline-sub">Industrial developers, manufacturers, supply chain partners</div></div><div class="pipeline-expand">&#9660;</div></div>
+<div class="pipeline-body"><div class="info-grid">
+<div class="info-card"><h3>Value Proposition</h3><p>CIR communities offer lower operating costs, available workforce, and infrastructure capacity. CIR data answers the questions manufacturers ask before site selectors call.</p><h4>What They Get</h4><ul><li>Workforce intelligence: available labor, skills, commute shed</li><li>Infrastructure data: utility capacity, rail, highway, broadband</li><li>Site specifications: industrial-zoned land, environmental clearances</li><li>Cost comparisons vs. metro and peer rural markets</li><li>Housing availability assessment for worker relocation</li></ul></div>
+<div class="info-card"><h3>Engagement Strategy</h3><h4>Pipeline Stages</h4><ul><li><strong>Identification:</strong> Monitor state leads. Build site selector relationships.</li><li><strong>RFI Response:</strong> Respond to Requests for Information within 48 hours.</li><li><strong>Due Diligence:</strong> Support with workforce studies and environmental assessments.</li><li><strong>Incentive Negotiation:</strong> Coordinate multi-level incentive packages.</li><li><strong>Workforce Development:</strong> Design custom workforce pipelines.</li></ul><h4>Timeline: 12-36 months</h4><p>Capital-intensive with long cycles. A single facility can transform a community for a generation.</p></div>
+</div></div></div>
+</div>
+
+<!-- PARTNERSHIP DESIGNER -->
+<div class="page" id="page-partnership">
+<div class="section-hero hero-partnership"><div class="hero-agent">Agent 4 / Partnership Designer</div><h2>Partnership Structures</h2><p>From "we want partners" to "here is what a partnership actually looks like."</p></div>
+<div class="tabs">
+<div class="tab active" data-tab="pd-structures">Deal Structures</div>
+<div class="tab" data-tab="pd-terms">Key Terms</div>
+<div class="tab" data-tab="pd-templates">Templates</div>
+</div>
+<div class="tab-panel active" id="pd-structures">
+<div class="info-grid">
+<div class="info-card" style="border-top:4px solid var(--purple-600)"><h3>Philanthropic Partnership Model</h3><h4>Structure: Program Investment Agreement</h4><p>Multi-year grant or PRI structured around community outcomes.</p><h4>Mutual Value</h4><ul><li><strong>Funder gets:</strong> Granular impact data. Verified readiness. Lower deployment risk. Portfolio diversification.</li><li><strong>CIR gets:</strong> Multi-year funding. Expanded reach. Validated model. Access to funder networks.</li></ul><h4>Success Metrics</h4><ul><li>Communities reaching "investment ready" threshold</li><li>Capital deployed into CIR communities</li><li>Economic indicators (jobs, housing, commercial activity)</li><li>Community capacity measures</li></ul></div>
+<div class="info-card" style="border-top:4px solid var(--teal-600)"><h3>Investor Partnership Model</h3><h4>Structure: Community Investment Platform</h4><p>CIR serves as matchmaking and de-risking platform. Investors access communities through data. CIR earns fees.</p><h4>Mutual Value</h4><ul><li><strong>Investor gets:</strong> Pre-qualified markets. Reduced diligence cost. Assembled incentives. Community relationship management.</li><li><strong>CIR gets:</strong> Fee revenue. Demonstrated outcomes. Expanded data. Strengthened value proposition.</li></ul><h4>Success Metrics</h4><ul><li>Deals facilitated (number and dollar value)</li><li>Pipeline velocity (introduction to commitment)</li><li>Investor satisfaction and repeat engagement</li><li>Community impact per dollar invested</li></ul></div>
+</div></div>
+<div class="tab-panel" id="pd-terms">
+<div class="info-card"><h3>Standard Terms by Partnership Type</h3>
+<table class="scenario-table"><thead><tr><th>Term</th><th>Philanthropic</th><th>Residential</th><th>Commercial</th><th>Manufacturing</th></tr></thead><tbody>
+<tr><td><strong>Duration</strong></td><td>2-5 years</td><td>Project-based</td><td>Annual + project</td><td>3-10 years</td></tr>
+<tr><td><strong>CIR Fee</strong></td><td>Grant / PRI</td><td>1-3% facilitation</td><td>Retainer + success</td><td>Retainer + milestone</td></tr>
+<tr><td><strong>Data Access</strong></td><td>Strategic tier</td><td>Professional tier</td><td>Professional tier</td><td>Strategic tier</td></tr>
+<tr><td><strong>Reporting</strong></td><td>Quarterly impact</td><td>Monthly construction</td><td>Quarterly pipeline</td><td>Quarterly + annual</td></tr>
+<tr><td><strong>Exclusivity</strong></td><td>Non-exclusive</td><td>Site-specific option</td><td>Category-limited</td><td>Site-specific option</td></tr>
+<tr><td><strong>Community Voice</strong></td><td>Advisory</td><td>Approval required</td><td>Input</td><td>Negotiation</td></tr>
+</tbody></table></div>
+<div class="callout callout-purple"><strong>Non-Negotiable:</strong> Every partnership structure includes a community voice mechanism. CIR does not bring investors into communities over community objections.</div>
+</div>
+<div class="tab-panel" id="pd-templates">
+<div class="info-card"><h3>Partnership Agreement Components</h3><p>Standard elements for every CIR partnership agreement:</p>
+<div class="info-grid">
+<div><h4>Core Components</h4><ul><li><strong>Scope:</strong> Specific communities, development types, outcomes</li><li><strong>Data Rights:</strong> What is shared, how used, attribution</li><li><strong>Community Consent:</strong> Input and approval mechanisms</li><li><strong>Reporting Cadence:</strong> What, when, format</li><li><strong>Success Metrics:</strong> Measures with baselines and targets</li><li><strong>Term and Renewal:</strong> Duration, review, renewal conditions</li></ul></div>
+<div><h4>Protective Elements</h4><ul><li><strong>Community Veto:</strong> Communities can decline specific investors</li><li><strong>Data Privacy:</strong> Community-identifiable data only with consent</li><li><strong>Mission Alignment:</strong> Periodic partnership review</li><li><strong>Exit Provisions:</strong> Clean separation process</li><li><strong>IP Clarity:</strong> CIR retains methodology; shared data is shared</li><li><strong>Conflict of Interest:</strong> Process for competing interests</li></ul></div>
+</div></div>
+</div>
+</div>
+
+<!-- REVENUE MODELER -->
+<div class="page" id="page-revenue">
+<div class="section-hero hero-revenue"><div class="hero-agent">Agent 5 / Revenue Modeler</div><h2>Revenue Scenario Analysis</h2><p>Modeling financial paths. What happens when pricing changes? Where are the sustainability risks?</p></div>
+<div class="tabs">
+<div class="tab active" data-tab="rv-scenarios">Scenarios</div>
+<div class="tab" data-tab="rv-risks">Risk Analysis</div>
+<div class="tab" data-tab="rv-growth">Growth Path</div>
+</div>
+<div class="tab-panel active" id="rv-scenarios">
+<div class="info-card"><h3>Three-Year Revenue Scenarios</h3>
+<table class="scenario-table"><thead><tr><th>Revenue Stream</th><th>Conservative</th><th>Moderate</th><th>Aggressive</th></tr></thead><tbody>
+<tr><td><strong>Dashboard Professional</strong></td><td class="num-cell">$200K</td><td class="num-cell">$450K</td><td class="num-cell">$750K</td></tr>
+<tr><td>Subscribers</td><td class="num-cell">25</td><td class="num-cell">38</td><td class="num-cell">50</td></tr>
+<tr><td><strong>Dashboard Strategic</strong></td><td class="num-cell">$150K</td><td class="num-cell">$400K</td><td class="num-cell">$900K</td></tr>
+<tr><td>Partners</td><td class="num-cell">3</td><td class="num-cell">5</td><td class="num-cell">8</td></tr>
+<tr><td><strong>Custom Analytics</strong></td><td class="num-cell">$150K</td><td class="num-cell">$350K</td><td class="num-cell">$600K</td></tr>
+<tr><td><strong>Deal Facilitation</strong></td><td class="num-cell">$75K</td><td class="num-cell">$250K</td><td class="num-cell">$500K</td></tr>
+<tr><td><strong>Philanthropic Grants</strong></td><td class="num-cell">$500K</td><td class="num-cell">$750K</td><td class="num-cell">$1M</td></tr>
+<tr class="highlight-row"><td><strong>Total Year 3</strong></td><td class="num-cell positive">$1.075M</td><td class="num-cell positive">$2.2M</td><td class="num-cell positive">$3.75M</td></tr>
+</tbody></table></div>
+<div class="info-grid">
+<div class="info-card"><h3>Conservative Scenario</h3><p><strong>Assumption:</strong> Slow adoption. 2-3 Strategic partnerships. Limited deal facilitation. Grants stable.</p><h4>Revenue Mix (Year 3)</h4><div class="impact-meter"><div class="impact-bar filled amber" style="flex:5"></div><div class="impact-bar filled green" style="flex:2"></div><div class="impact-bar filled green" style="flex:1.5"></div><div class="impact-bar filled green" style="flex:1.5"></div></div><div class="impact-label"><span>47% Grants</span><span>53% Earned</span></div><p style="margin-top:8px;font-size:0.82rem;color:var(--slate-500)">Still grant-dependent but moving toward earned revenue.</p></div>
+<div class="info-card"><h3>Moderate Scenario</h3><p><strong>Assumption:</strong> Steady growth. Product-market fit confirmed Year 1. 4-5 Strategic partnerships by Year 3.</p><h4>Revenue Mix (Year 3)</h4><div class="impact-meter"><div class="impact-bar filled amber" style="flex:3.5"></div><div class="impact-bar filled green" style="flex:2"></div><div class="impact-bar filled green" style="flex:2"></div><div class="impact-bar filled green" style="flex:2.5"></div></div><div class="impact-label"><span>34% Grants</span><span>66% Earned</span></div><p style="margin-top:8px;font-size:0.82rem;color:var(--slate-500)">Crossed the sustainability threshold. Earned revenue covers core operations.</p></div>
+</div></div>
+<div class="tab-panel" id="rv-risks">
+<div class="info-card"><h3>Revenue Risk Assessment</h3><div class="info-grid">
+<div><h4>High-Risk Scenarios</h4><ul>
+<li><strong>Grant Cliff:</strong> Primary funder exits. Impact: 30-50% revenue loss. Mitigation: Diversify NOW. <span class="metric-badge risk">High</span></li>
+<li><strong>Dashboard Commoditization:</strong> Competitors build comparable products. Impact: Pricing pressure. Mitigation: Invest in CIR-unique products. <span class="metric-badge risk">Medium</span></li>
+<li><strong>Deal Facilitation Failure:</strong> First deals do not close. Impact: Revenue shortfall AND reputation damage. Mitigation: Start with high-confidence deals. <span class="metric-badge risk">Medium</span></li>
+</ul></div>
+<div><h4>Opportunity Risks (Missing Upside)</h4><ul>
+<li><strong>Under-pricing Strategic:</strong> Institutional buyers have higher willingness to pay. Mitigation: Anchor at $150K. <span class="metric-badge opportunity">Upside</span></li>
+<li><strong>No Self-Service:</strong> Every request requires staff. Risk: Growth constrained by headcount. <span class="metric-badge opportunity">Upside</span></li>
+<li><strong>No Alumni Network:</strong> Post-cohort communities disconnect. Missing recurring revenue. <span class="metric-badge opportunity">Upside</span></li>
+</ul></div>
+</div></div></div>
+<div class="tab-panel" id="rv-growth">
+<div class="info-card"><h3>Recommended Growth Path</h3><div class="info-grid-3">
+<div class="info-card" style="border-top:4px solid var(--amber-600)"><h3>Year 1: Foundation</h3><ul><li>Launch Professional with 15-20 subscribers</li><li>Secure 2 Strategic partnerships</li><li>Complete 5-8 custom analytics projects</li><li>Facilitate first 1-2 investor matches</li><li>Diversify to 3+ philanthropic sources</li></ul><p style="margin-top:10px"><strong>Target:</strong> $800K (60% grants / 40% earned)</p></div>
+<div class="info-card" style="border-top:4px solid var(--blue-600)"><h3>Year 2: Scale</h3><ul><li>Grow Professional to 30-35 subscribers</li><li>Add 2-3 Strategic partnerships</li><li>Launch self-service portal</li><li>Facilitate 3-5 deals</li><li>Build alumni network</li></ul><p style="margin-top:10px"><strong>Target:</strong> $1.5M (45% grants / 55% earned)</p></div>
+<div class="info-card" style="border-top:4px solid var(--green-600)"><h3>Year 3: Sustainability</h3><ul><li>Professional at 40-50 subscribers</li><li>5-8 active Strategic partnerships</li><li>Deal facilitation established</li><li>Second cohort launched</li><li>Earned revenue covers core ops</li></ul><p style="margin-top:10px"><strong>Target:</strong> $2.2M (34% grants / 66% earned)</p></div>
+</div></div></div>
+</div>
+
+<!-- COMMUNITY IMPACT -->
+<div class="page" id="page-impact">
+<div class="section-hero hero-impact"><div class="hero-agent">Agent 6 / Community Impact Assessor</div><h2>Mission Alignment Check</h2><p>Every strategy option evaluated against actual community outcomes. The integrity layer.</p></div>
+<div class="tabs">
+<div class="tab active" data-tab="im-assessment">Impact Assessment</div>
+<div class="tab" data-tab="im-tensions">Mission Tensions</div>
+<div class="tab" data-tab="im-guardrails">Guardrails</div>
+</div>
+<div class="tab-panel active" id="im-assessment">
+<div class="callout callout-red"><strong>Core Question:</strong> Does this strategy update make CIR communities better off? Every decision is evaluated against this standard.</div>
+<div class="info-grid">
+<div class="info-card"><h3>Impact Dimensions</h3><h4>Economic</h4><ul><li>Jobs created or retained</li><li>Capital invested</li><li>Tax base expansion</li><li>Business formation and retention</li><li>Wage growth</li></ul><h4>Social</h4><ul><li>Housing availability and affordability</li><li>Population retention and attraction</li><li>Access to services</li><li>Civic infrastructure and trust</li><li>Community capacity for self-directed development</li></ul></div>
+<div class="info-card"><h3>Strategy Option Scores</h3>
+<h4>Dashboard Tiering</h4><div class="impact-meter"><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar empty"></div></div><div class="impact-label"><span>Community Impact: Strong</span></div><p style="font-size:0.8rem;color:var(--slate-500)">Open tier expands access. CIR communities keep full access.</p>
+<h4>Investor Pipeline</h4><div class="impact-meter"><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled amber"></div><div class="impact-bar empty"></div></div><div class="impact-label"><span>Community Impact: Good with Conditions</span></div><p style="font-size:0.8rem;color:var(--slate-500)">Brings capital. Risk: investor priorities may not align. Community veto mitigates.</p>
+<h4>Deal Facilitation Revenue</h4><div class="impact-meter"><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled amber"></div><div class="impact-bar filled amber"></div><div class="impact-bar empty"></div></div><div class="impact-label"><span>Community Impact: Moderate — Monitor</span></div><p style="font-size:0.8rem;color:var(--slate-500)">Fee-for-deal creates deal-closing incentive. Must ensure quality over volume.</p>
+<h4>Cohort Expansion</h4><div class="impact-meter"><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div><div class="impact-bar filled green"></div></div><div class="impact-label"><span>Community Impact: Highest</span></div><p style="font-size:0.8rem;color:var(--slate-500)">More communities receiving CIR support. Core mission.</p>
+</div></div></div>
+<div class="tab-panel" id="im-tensions">
+<div class="tension-card"><h4>Dashboard Revenue vs. Data Access <span class="metric-badge risk">Active Tension</span></h4><p>Monetizing dashboards creates an access question.</p>
+<div class="tension-sides"><div class="tension-side left"><h5>Dashboard Strategist</h5><p>Three-tier model preserves open access at base. CIR communities get full access free. No reduction.</p></div><div class="tension-vs">VS</div><div class="tension-side right"><h5>Impact Assessor</h5><p>Non-CIR communities in the Open tier get only basic data. Best insights are behind the paywall. May be fine, but name it.</p></div></div></div>
+<div class="tension-card"><h4>Deal Volume vs. Deal Quality <span class="metric-badge risk">Active Tension</span></h4><p>Facilitation fees create incentive to close deals. But not every match should close.</p>
+<div class="tension-sides"><div class="tension-side left"><h5>Revenue Modeler</h5><p>Deal facilitation is meaningful revenue ($250K+). Need volume to justify pipeline investment.</p></div><div class="tension-vs">VS</div><div class="tension-side right"><h5>Impact Assessor</h5><p>One bad deal destroys CIR reputation with all six communities. Quality veto must override revenue targets.</p></div></div></div>
+<div class="tension-card"><h4>Scale vs. Relationship Quality <span class="metric-badge risk">Active Tension</span></h4><p>Expanding to Cohort 2 doubles reach but risks diluting relationship quality.</p>
+<div class="tension-sides"><div class="tension-side left"><h5>Revenue Modeler</h5><p>More communities = more data = more valuable platform = more revenue. The network effect is real.</p></div><div class="tension-vs">VS</div><div class="tension-side right"><h5>Impact Assessor</h5><p>CIR effectiveness comes from deep trust. Doubling without proportional capacity risks becoming a data vendor, not a partner.</p></div></div></div>
+</div>
+<div class="tab-panel" id="im-guardrails">
+<div class="info-card"><h3>Recommended Mission Guardrails</h3><div class="info-grid">
+<div><h4>Hard Rules (Non-Negotiable)</h4><ul><li><strong>Community Veto:</strong> Any CIR community can reject any investor or project.</li><li><strong>CIR Access:</strong> Current and alumni communities never lose data access.</li><li><strong>Transparency:</strong> Every partnership term disclosed to affected communities.</li><li><strong>No Extractive Deals:</strong> No investments designed to extract without proportional benefit.</li></ul></div>
+<div><h4>Review Mechanisms</h4><ul><li><strong>Quarterly Impact Review:</strong> Every revenue stream evaluated against outcomes.</li><li><strong>Annual Community Survey:</strong> CIR communities rate experience. Results shared.</li><li><strong>Deal Post-Mortem:</strong> 6-month and 18-month impact assessment per deal.</li><li><strong>Mission Drift Indicator:</strong> If earned exceeds 75% AND impact scores decline, trigger review.</li></ul></div>
+</div></div></div>
+</div>
+
+<!-- STRATEGY SYNTHESIZER -->
+<div class="page" id="page-synthesizer">
+<div class="section-hero hero-synthesizer"><div class="hero-agent">Agent 7 / Strategy Synthesizer</div><h2>Integrated Strategy Recommendation</h2><p>All six agents' analysis synthesized into coherent strategy with named tensions and clear action sequence.</p></div>
+<div class="tabs">
+<div class="tab active" data-tab="sy-summary">Executive Summary</div>
+<div class="tab" data-tab="sy-recs">Recommendations</div>
+<div class="tab" data-tab="sy-sequence">Action Sequence</div>
+</div>
+<div class="tab-panel active" id="sy-summary">
+<div class="callout callout-blue"><strong>Bottom Line:</strong> CIR has the relationships, data assets, and credibility to build a sustainable business model. The strategy update should transform CIR from a grant-funded program into a platform that generates earned revenue while deepening community impact.</div>
+<div class="info-card"><h3>Strategy on a Page</h3><div class="info-grid">
+<div><h4>What CIR Has</h4><ul><li>Deep, trust-based community relationships</li><li>Comprehensive community data infrastructure</li><li>Unique Investment Readiness methodology</li><li>Strong program credibility</li><li>Field intelligence no competitor can replicate</li></ul></div>
+<div><h4>What CIR Needs</h4><ul><li>Revenue diversification beyond grants</li><li>Productized data offerings with clear tiering</li><li>Formal investor pipeline infrastructure</li><li>Self-service capabilities</li><li>Scale model preserving relationship quality</li></ul></div>
+</div>
+<div style="margin-top:20px"><h4>The Strategic Thesis</h4><p>CIR becomes the platform where community investment readiness meets investor capital deployment. The dashboards are the product. The relationships are the moat. The investor pipeline is the growth engine. Revenue funds deeper engagement, not the other way around.</p></div></div>
+<div class="info-card"><h3>Named Tensions (Unresolved)</h3><p style="margin-bottom:12px">These should be held as ongoing design questions, revisited quarterly:</p><ul>
+<li><strong>Revenue incentives vs. deal quality</strong> — Facilitation fees incentivize volume. Mission requires quality veto. Both are right.</li>
+<li><strong>Scale vs. depth</strong> — More communities = more platform value. But depth is what makes CIR work.</li>
+<li><strong>Open data vs. premium data</strong> — The Open tier serves mission. Premium tiers serve revenue. The line is a values decision.</li>
+</ul></div></div>
+<div class="tab-panel" id="sy-recs">
+<div class="rec-card"><h4>1. Launch Three-Tier Dashboard Model <span class="rec-priority p1">Priority 1</span></h4><p>Implement Open / Professional / Strategic tiering within 90 days. Start with 15-20 Professional subscribers. Fastest path to earned revenue and foundation for everything else.</p><p><strong>Why first:</strong> Revenue diversification is most urgent. Dashboard tiering is lowest-risk, highest-certainty stream.</p><div class="rec-agents"><span class="rec-agent">A2: Dashboard Strategist</span><span class="rec-agent">A5: Revenue Modeler</span><span class="rec-agent">A6: Impact Assessor</span></div></div>
+<div class="rec-card"><h4>2. Build Philanthropic Pipeline First <span class="rec-priority p1">Priority 1</span></h4><p>Target 2-3 foundation partnerships in Year 1. Use Investment Readiness Scorecard as anchor product. Foundation validation makes every other investor category easier.</p><div class="rec-agents"><span class="rec-agent">A3: Pipeline Architect</span><span class="rec-agent">A4: Partnership Designer</span><span class="rec-agent">A6: Impact Assessor</span></div></div>
+<div class="rec-card"><h4>3. Pilot Residential Investor Matching <span class="rec-priority p2">Priority 2</span></h4><p>Start with 1-2 high-confidence developer-community matches. Housing demand is documented, employer-backed, and urgent. First completed deal becomes the case study for the next 10.</p><div class="rec-agents"><span class="rec-agent">A3: Pipeline Architect</span><span class="rec-agent">A4: Partnership Designer</span><span class="rec-agent">A5: Revenue Modeler</span></div></div>
+<div class="rec-card"><h4>4. Build Commercial & Manufacturing Pipelines <span class="rec-priority p2">Priority 2</span></h4><p>Begin pipeline development in parallel but do not expect Year 1 revenue. Longer cycles, higher per-deal value. Plant seeds now, harvest in Years 2-3.</p><div class="rec-agents"><span class="rec-agent">A3: Pipeline Architect</span><span class="rec-agent">A1: Landscape Analyst</span></div></div>
+<div class="rec-card"><h4>5. Invest in Self-Service Platform <span class="rec-priority p3">Priority 3</span></h4><p>Build self-service portal for Professional tier. Target: 60% of data requests handled without staff by end of Year 2. This is the bottleneck that prevents scaling.</p><div class="rec-agents"><span class="rec-agent">A2: Dashboard Strategist</span><span class="rec-agent">A5: Revenue Modeler</span></div></div>
+<div class="rec-card"><h4>6. Design Cohort 2 with Earned Revenue Model <span class="rec-priority p3">Priority 3</span></h4><p>When launching Cohort 2, design from the start with the new revenue model built in. Tests whether the CIR model scales without losing what makes it work.</p><div class="rec-agents"><span class="rec-agent">A1: Landscape Analyst</span><span class="rec-agent">A6: Impact Assessor</span><span class="rec-agent">A7: Synthesizer</span></div></div>
+</div>
+<div class="tab-panel" id="sy-sequence">
+<div class="info-card"><h3>90-Day Action Plan</h3><div class="info-grid-3">
+<div class="info-card" style="border-top:4px solid var(--red-600)"><h3>Days 1-30</h3><h4>Build & Validate</h4><ul><li>Finalize three-tier product definitions</li><li>Set pricing for Professional and Strategic</li><li>Identify 20 potential Professional buyers</li><li>Identify 5 potential philanthropic partners</li><li>Brief CIR communities on strategy direction</li><li>Install mission guardrails</li></ul></div>
+<div class="info-card" style="border-top:4px solid var(--amber-600)"><h3>Days 31-60</h3><h4>Launch & Learn</h4><ul><li>Launch Professional to first 10-15 subscribers</li><li>Begin philanthropic conversations (3-5 foundations)</li><li>Identify 2-3 residential developer targets</li><li>Validate Strategic tier pricing</li><li>Start self-service portal requirements</li><li>First monthly impact review</li></ul></div>
+<div class="info-card" style="border-top:4px solid var(--green-600)"><h3>Days 61-90</h3><h4>Prove & Expand</h4><ul><li>Close first Professional renewals</li><li>Present to 2-3 foundation investment committees</li><li>Host first developer site visit</li><li>Assemble commercial data packages</li><li>Begin manufacturing pipeline development</li><li>90-day strategy review with full analysis</li></ul></div>
+</div></div>
+<div class="callout callout-green"><strong>Success Metric:</strong> At 90 days, CIR should have 10+ paying Professional subscribers, 2+ active philanthropic conversations, and 1 residential developer in active evaluation. If those three things are true, the strategy is working.</div>
+</div>
+</div>
+
+</div></div>
+
+<script>
+document.querySelectorAll('.nav-item, .agent-card, .dash-card').forEach(function(item){
+  item.addEventListener('click', function(){
+    var page = this.dataset.page;
+    if(!page) return;
+    document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+    var navMatch = document.querySelector('.nav-item[data-page="'+page+'"]');
+    if(navMatch) navMatch.classList.add('active');
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+    var pageEl = document.getElementById('page-'+page);
+    if(pageEl) pageEl.classList.add('active');
+    var titles = {dashboard:'Strategy Dashboard',landscape:'Landscape Analyst',dashboards:'Dashboard Strategist',pipeline:'Investor Pipeline Architect',partnership:'Partnership Designer',revenue:'Revenue Modeler',impact:'Community Impact Assessor',synthesizer:'Strategy Synthesizer'};
+    document.getElementById('page-title').textContent = titles[page] || 'CIR Strategy Platform';
+    window.scrollTo(0,0);
+  });
+});
+document.querySelectorAll('.tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    var tabId = this.dataset.tab;
+    if(!tabId) return;
+    var container = this.closest('.page');
+    container.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+    container.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
+    this.classList.add('active');
+    var panel = document.getElementById(tabId);
+    if(panel) panel.classList.add('active');
+  });
+});
+function togglePipeline(id){
+  document.getElementById(id).classList.toggle('open');
+}
+</script>
+</body>
+</html>
